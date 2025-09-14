@@ -1,10 +1,12 @@
 import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
+import java.util.ArrayList;
 
 public class Frog extends SuperSmoothMover
 {
     private static GreenfootImage frogRight;
     private static GreenfootImage frogLeft;
     private Bug targetBug;
+    private ArrayList<Bug> bugs;
     private double mySpeed = 2.5;
     private boolean facingRight = true;
 
@@ -21,7 +23,7 @@ public class Frog extends SuperSmoothMover
 
     public void act() {
         if (targetBug == null || targetBug.getWorld() == null) {
-            pickClosestBug();
+            targetClosestBug();
         }
 
         if (targetBug != null) {
@@ -29,19 +31,32 @@ public class Frog extends SuperSmoothMover
         }
     }
 
-    private void pickClosestBug() {
-        targetBug = null;
-        double closestDistance = Double.MAX_VALUE;
+    /** Works like Bug.targetClosestFlower() but for Bugs */
+    private void targetClosestBug() {
+        double closestTargetDistance = Double.MAX_VALUE;
+        double distanceToActor;
 
-        for (Object obj : getWorld().getObjects(Bug.class)) {
-            Bug b = (Bug)obj;
-            double dx = b.getX() - getX();
-            double dy = b.getY() - getY();
-            double distance = Math.sqrt(dx*dx + dy*dy);
+        // look for bugs in closer ranges first
+        bugs = (ArrayList<Bug>)getObjectsInRange(40, Bug.class);
+        if (bugs.size() == 0) {
+            bugs = (ArrayList<Bug>)getObjectsInRange(150, Bug.class);
+        }
+        if (bugs.size() == 0) {
+            bugs = (ArrayList<Bug>)getObjectsInRange(300, Bug.class);
+        }
 
-            if (distance < closestDistance && distance < 1000) {
-                closestDistance = distance;
-                targetBug = b;
+        if (bugs.size() > 0) {
+            // set the first one as my target
+            targetBug = bugs.get(0);
+            closestTargetDistance = getDistance(this, targetBug);
+
+            // loop through others to find the closest
+            for (Bug b : bugs) {
+                distanceToActor = getDistance(this, b);
+                if (distanceToActor < closestTargetDistance) {
+                    targetBug = b;
+                    closestTargetDistance = distanceToActor;
+                }
             }
         }
     }
@@ -71,5 +86,12 @@ public class Frog extends SuperSmoothMover
 
             setLocation(getX() + (int)moveX, getY() + (int)moveY);
         }
+    }
+
+    // calculates distance
+    private double getDistance(Actor a, Actor b) {
+        double dx = a.getX() - b.getX();
+        double dy = a.getY() - b.getY();
+        return Math.sqrt(dx*dx + dy*dy);
     }
 }

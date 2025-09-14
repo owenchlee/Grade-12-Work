@@ -105,7 +105,7 @@ public class DesertWorld extends World
         actCounter = 0;
         flowerSpawnCounter = FLOWER_SPAWN_RATE;
         lastAct = -1;
-        // Spawn a bug
+        // Spawn three bugs at the start
         spawnBug();
         spawnBug();
         spawnBug();
